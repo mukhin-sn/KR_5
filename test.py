@@ -44,5 +44,36 @@ def get_employers(emploer):
     # return employers
 
 
-emplr = 'Газпром'
-get_employers(emplr)
+def get_vacancies(text: str, emp_id: str, area: int):
+    params = {
+        "per_page": 100,
+        "area": area,
+        # "text": f"NAME:{text}",
+        "employer_id": emp_id
+    }
+    req = requests.get('https://api.hh.ru/vacancies', params=params)
+    data = req.content.decode()
+    req.close()
+    count_of_vacancy = json.loads(data)['found']
+    vacancy_list = json.loads(data)['items']
+    if count_of_vacancy == 0:
+        return None
+    # print(count_of_vacancy)
+    # print(len(vacancy_list))
+    # for dat in vacancy_list:
+    #     print(dat)
+    return count_of_vacancy, vacancy_list
+
+
+# emplr = 'Газпром'
+# get_employers(emplr)
+#
+
+
+txt = "Python"
+employers_id = '49357'  # '1455'
+areas = 113
+vacan = get_vacancies(txt, employers_id, areas)
+print(vacan[0])
+for i in vacan[1]:
+    print(i)
