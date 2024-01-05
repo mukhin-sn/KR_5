@@ -27,27 +27,27 @@ def get_areas():
 #########################################################################################
 
 
-areas = get_areas()
-print(len(areas))
-rus_ars = []
-for ars in areas:
-    if int(ars[0]) == 113:
-        rus_ars.append([ars[2], ars[3]])
-    # print(ars)
-print(len(rus_ars))
-try:
-    for r_ars in rus_ars:
-        vacancy_id = get_vacancies("Python", '9245413', int(r_ars[0]))
-        if vacancy_id is not None:
-            print(r_ars)
-            for vac in vacancy_id[1]:
-                print(vac)
-            print(vacancy_id[0])
-            print("-" * 50)
-        else:
-            continue
-except KeyboardInterrupt:
-    print('Пользователь прервал программу')
+# areas = get_areas()
+# print(len(areas))
+# rus_ars = []
+# for ars in areas:
+#     if int(ars[0]) == 113:
+#         rus_ars.append([ars[2], ars[3]])
+#     # print(ars)
+# print(len(rus_ars))
+# try:
+#     for r_ars in rus_ars:
+#         vacancy_id = get_vacancies("Python", '9245413', int(r_ars[0]))
+#         if vacancy_id is not None:
+#             print(r_ars)
+#             for vac in vacancy_id[1]:
+#                 print(vac)
+#             print(vacancy_id[0])
+#             print("-" * 50)
+#         else:
+#             continue
+# except KeyboardInterrupt:
+#     print('Пользователь прервал программу')
 
 
 
