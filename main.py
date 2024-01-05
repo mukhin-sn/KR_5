@@ -1,8 +1,9 @@
-from src.hh_areas import get_areas
+from src.hh_areas import *
 from test import get_employers, get_vacancies
 
 
 def main():
+    db_name = "hh_ru"
 
     # Тестирование функции get_employers()
     # ===============================================
@@ -27,9 +28,21 @@ def main():
     # Тестирование функции get_areas()
     # ===============================================
     areas = get_areas()
-    print(len(areas))
-    for ar in areas:
-        print(ar)
+    # print(len(areas))
+    # for ar in areas:
+    #     print(ar, len(ar[3]))
+    # ===============================================
+
+    # Тестирование функции areas_load_to_db()
+    # ===============================================
+    password = input('Введите пароль от базы данных -> ')
+    areas_load_to_db(db_name, password, areas)
+    # ===============================================
+
+    # Тестирование функции create_database()
+    # ===============================================
+    # password = input('Введите пароль от базы данных -> ')
+    # create_database("db_hh", password)
     # ===============================================
 
 
