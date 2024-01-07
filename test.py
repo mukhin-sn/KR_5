@@ -4,29 +4,61 @@ import time
 
 
 def get_employers(emploer):
-    """Метод вывода всех вакансий на HH.RU"""
+    """Метод вывода вакансий на HH.RU"""
 
     # параметры, передаваемые в GET запросе
     params = {
         "per_page": 100,
-        # "area": 113,
-        # "text": f"NAME:{emploer}",
-        "only_with_vacancies": True,
-        "sort_by": "by_vacancies_open",
+        # "area": 113,                      # Регион работодателя
+        # "text": f"NAME:{emploer}",        # Текст, встречающийся в имени работодателя
+        # "only_with_vacancies": True,      # Только открытые вакансии
+        "sort_by": "by_vacancies_open",     # Сортировка по количеству открытых вакансий по убыванию
     }
 
-    req = requests.get('https://api.hh.ru/employers', params=params)
-    data = req.content.decode()
-    req.close()
-    count_of_employers = json.loads(data)['found']
+    # Список найденных работодателей
     employers = []
-    data_list = json.loads(data)['items']
-    i = 0
-    j = count_of_employers
-    print(j)
-    print(len(data_list))
-    for dat in data_list:
-        print(dat)
+
+    # Выод общего количества найденных работодателей
+    count_of_employers = requests.get('https://api.hh.ru/employers', params=params).json()["found"]
+    print(f"Количество найденных работодателей на hh.ru = {count_of_employers}")
+
+    # Вычисляем колличество страниц для отображения работодателей
+    page_count = count_of_employers // 100
+    if page_count >= 20:
+        page_count = 20
+    elif (count_of_employers % 100) > 0:
+        page_count += 1
+    print(f"Количество страниц = {page_count}")
+
+    # Формирование списка работодателей
+    for page in range(page_count):
+        params["page"] = page
+        data_list = requests.get('https://api.hh.ru/employers', params=params).json()["items"]
+        employers.extend(data_list)
+        time.sleep(0.2)
+
+    # print(f"Количество работодателей с наибольшим числом открытых вакансий =\n{len(employers)}")
+
+    # Выод в консоль полученного списка работодателей
+    for employ in employers:
+        print(f"ID компании: {employ['id']}; "
+              f"Название компании: {employ['name']}; "
+              f"Количество открытых вакансий: {employ['open_vacancies']} ")
+
+    # req = requests.get('https://api.hh.ru/employers', params=params)
+    # print(req.json()["items"])
+    # print(req.json()["found"])
+    # data = req.content.decode()
+    # req.close()
+    # count_of_employers = json.loads(data)['found']
+
+    # data_list = json.loads(data)['items']
+    # i = 0
+    # j = count_of_employers
+    # print(j)
+    # print(len(data_list))
+    # for dat in data_list:
+    #     print(dat)
     # while i < j:
     #     req = requests.get(f'https://api.hh.ru/employers/{str(i + 1)}')
     #     data = req.content.decode()
@@ -44,14 +76,8 @@ def get_employers(emploer):
     # return employers
 
 
-def get_vacancies(text: str, emp_id: str, area: int):
-    params = {
-        "per_page": 100,
-        "area": area,
-        # "text": f"NAME:{text}",
-        "employer_id": emp_id,
-        "only_with_salary": True,
-    }
+def get_vacancies(params: dict):
+
     req = requests.get('https://api.hh.ru/vacancies', params=params)
     data = req.content.decode()
     req.close()
@@ -64,5 +90,3 @@ def get_vacancies(text: str, emp_id: str, area: int):
     # for dat in vacancy_list:
     #     print(dat)
     return count_of_vacancy, vacancy_list
-
-

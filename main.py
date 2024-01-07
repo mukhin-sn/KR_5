@@ -16,18 +16,29 @@ def main():
 
     # Тестирование функции get_vacancies()
     # ===============================================
-    # txt = "Python"
-    # employers_id = '49357'  # '1455'
-    # areas = 113
-    # vacan = get_vacancies(txt, employers_id, areas)
-    # print(vacan[0])
-    # for i in vacan[1]:
-    #     print(i)
+    txt = "Python"
+    emp_id = '49357'  # '1455'
+    area = 113
+    params = {
+        "per_page": 100,
+        "area": area,
+        # "text": f"NAME:{txt}",
+        "employer_id": emp_id,
+        "only_with_salary": True,
+        }
+
+    for i in range(20):
+        print("=" * 300)
+        params["page"] = i
+        vac = get_vacancies(params)
+        # print(vac[0])
+        for j in vac[1]:
+            print(j)
     # ===============================================
 
     # Тестирование функции get_areas()
     # ===============================================
-    areas = get_areas()
+    # areas = get_areas()
     # print(len(areas))
     # for ar in areas:
     #     print(ar, len(ar[3]))
@@ -35,8 +46,8 @@ def main():
 
     # Тестирование функции areas_load_to_db()
     # ===============================================
-    password = input('Введите пароль от базы данных -> ')
-    areas_load_to_db(db_name, password, areas)
+    # password = input('Введите пароль от базы данных -> ')
+    # areas_load_to_db(db_name, password, areas)
     # ===============================================
 
     # Тестирование функции create_database()
