@@ -26,15 +26,17 @@ class HhClass:
                 f"Number of records found = {self.count_of_data_list}\n"
                 f"стр. {self.page_count()}")
 
-    def get_data(self) -> list:
+    def get_data(self, param=None) -> list:
         """
         Метод получения данных с сайта hh.ru
         :return: Список полученных, в результате GET-запроса, данных
         """
 
+        if param is None:
+            param = self.params
         for page in range(self.page_count()):
-            self.params["page"] = page
-            temp_data_list = requests.get(self.url, params=self.params).json()["items"]
+            param["page"] = page
+            temp_data_list = requests.get(self.url, params=param).json()["items"]
             self.data_list.extend(temp_data_list)
             time.sleep(0.2)
 
@@ -49,7 +51,7 @@ class HhClass:
 
         temp_data_list = []
         for dl in self.data_list:
-            print(dl)
+            # print(dl)
             temp_dic = dict(
                 id_empl=dl['employer']['id'],
                 name_empl=dl['employer']['name'],
@@ -57,12 +59,12 @@ class HhClass:
                 name_vac=dl['name'],
             )
             temp_data_list.append(temp_dic)
-            # print(f"ID employer: {dl['employer']['id']}; "
-            #       f"Название компании: {dl['employer']['name']}; "
-            #       f"ID вакансии: {dl['id']}; "
-            #       f"Название вакансии: {dl['name']}"
-            #       # f"Количество открытых вакансий: {dl['open_vacancies']}"
-            #       )
+            print(f"ID employer: {dl['employer']['id']}; "
+                  f"Название компании: {dl['employer']['name']}; "
+                  f"ID вакансии: {dl['id']}; "
+                  f"Название вакансии: {dl['name']}"
+                  # f"Количество открытых вакансий: {dl['open_vacancies']}"
+                  )
         return temp_data_list
 
     def page_count(self) -> int:
@@ -78,7 +80,8 @@ class HhClass:
             page_count += 1
         return page_count
 
-    def save_to_file(self, file_name: str, dt_lst: list) -> None:
+    @staticmethod
+    def save_to_file(file_name: str, dt_lst: list) -> None:
         """
         Метод сохраняет полученные данные в файл
         :param file_name: имя файла
@@ -88,18 +91,29 @@ class HhClass:
         with open(file_name, "w", encoding="utf-8") as file:
             json.dump(dict(object=dt_lst), file)
 
-    def load_from_file(self, file_name) -> list:
+    @staticmethod
+    def load_from_file(file_name) -> list:
         """
         Метод загрузки данных из *.json файла в список
         :param file_name: имя файла
         :return: список словарей из *.json файла
         """
-        with open(file_name, "r") as file:
+        with open(file_name, "r", encoding="utf-8") as file:
             out_list = json.load(file)
             return out_list
 
+    def id_employers_filter(self):
+        if not self.data_list:
+            self.get_data()
+        print(f"Всего записей: {len(self.data_list)}")
+        out_list = []
+        for val_dic in self.data_list:
+            out_list.append(val_dic['employer']['id'])
+        out_list = set(out_list)
+        return list(out_list)
 
 ###############################################################################################################
+
 
 # url = "https://api.hh.ru/employers"
 # params = {
@@ -118,24 +132,48 @@ class HhClass:
 # print("=" * 300 + "\n")
 
 url = "https://api.hh.ru/vacancies"
-# text = 'Python'
-emp_id = 5178281
+text = 'Python'
+# emp_id = 5178281
 params = {
     "per_page": 100,
     "area": 113,
-    # "text": f"NAME:{text}",
-    "employer_id": emp_id,
+    "text": f"NAME:{text}",
+    # "employer_id": emp_id,
     "only_with_salary": True,
 }
 
-vac_class = HhClass(url, params)
-print(vac_class)
-print(repr(vac_class))
+# vac_class = HhClass(url, params)
+# print(vac_class)
+# print(repr(vac_class))
 # data_lst = vac_class.print_data_list()
+# out_lst = vac_class.get_data()
 
+# filter_id = vac_class.id_employers_filter()
+# print(len(filter_id))
+# vac_class.save_to_file('filter_id.json', filter_id)
+
+# vac_class.save_to_file('out_vac.json', out_lst)
 # vac_class.save_to_file('vacancy_data.json', data_lst)
 
-# file_data = vac_class.load_from_file("vacancy_data.json")
-# for i in file_data['object']:
-#     print(i['id_empl'])
+# file_data = HhClass.load_from_file("filter_id.json")
+# print(len(file_data['object']))
+# # for i in file_data['object']:
+# #     print(i)
+# temp_list = []
+# for obj_files in file_data['object']:
+#     params = {
+#         "per_page": 100,
+#         "area": 113,
+#         # "text": f"NAME:{text}",
+#         "employer_id": obj_files,
+#         "only_with_salary": True,
+#     }
+#     vacancy_data = HhClass(url, params)
+#     _data = vacancy_data.get_data()
+#     out_data = {obj_files: _data}
+#     temp_list.append(out_data)
+#     print(f"id: {obj_files}; "
+#           f"found: {vacancy_data.count_of_data_list} = {len(_data)}")
+#
+# HhClass.save_to_file('out_vac.json', temp_list)
 
