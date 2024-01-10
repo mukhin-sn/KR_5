@@ -1,6 +1,7 @@
 from src.hh_areas import *
 from test import get_employers, get_vacancies
 from src.hh_class import *
+from src.db_class import *
 
 def main():
     db_name = "hh_ru"
@@ -60,23 +61,28 @@ def main():
 if __name__ == '__main__':
     main()
 
-    # Берём данные из сохраненного файла
-    data_list = HhClass.load_from_file('src/out_vac.json')
-    data_list = data_list['object']
-
-    # Определяем количество нужных записей
-    count = len(data_list)
-
-    # Формируем словарь и список из ID - работодателей и количества открытых ими вакансий
-    out_list = []
-    out_dict = {}
-    for val_lst in data_list:
-        for key, val in val_lst.items():
-            out_dict.update({key: len(val)})
-            out_list.append(dict(id=key, found_vacancy=len(val)))
-
-    for i in out_list:
-        print(i)
+    # # Берём данные из сохраненного файла
+    # data_list = HhClass.load_from_file('src/out_vac.json')
+    # data_list = data_list['object']
+    #
+    # # Определяем количество нужных записей
+    # count = len(data_list)
+    #
+    # # Формируем словарь и список из ID - работодателей и количества открытых ими вакансий
+    # out_list = []
+    # out_dict = {}
+    # for val_lst in data_list:
+    #     for key, val in val_lst.items():
+    #         out_dict.update({key: len(val)})
+    #         out_list.append(dict(id=key, found_vacancy=len(val)))
+    #
+    # for i in out_list:
+    #     print(i)
 
     # Сохраняем полученный список в файл, для дальнейшей обработки
     # HhClass.save_to_file('src/found_vacancy.json', out_list)
+
+    passwrd = input('Введите пароль для входа в базу данных -> ')
+    db_func = DBManager(passwrd, database="north")
+    lst_print = db_func.get_companies_and_vacancies_count()
+    HhClass.print_data(lst_print)

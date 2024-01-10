@@ -38,6 +38,20 @@ params_db = {
 }
 
 
+# def fun_a(pdb):
+#     try:
+#         host = pdb['host']
+#         db = pdb['database']
+#         usr = pdb['user']
+#     except KeyError:
+#         return None
+#     return 1
+#
+#
+# b = fun_a(params_db)
+# print(b)
+
+
 def create_database(db_name: str, password: str) -> None:
     """
     Метод создания базы данных

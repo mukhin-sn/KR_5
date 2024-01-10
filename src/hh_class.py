@@ -112,6 +112,20 @@ class HhClass:
         out_list = set(out_list)
         return list(out_list)
 
+    @staticmethod
+    def print_data(data_list: list[tuple]) -> None:
+        """
+        Метод вывода в консоль данных
+        :param data_list: список выводимых в консоль данных
+        :return:
+        """
+        for line in data_list:
+            for s_data in range(len(line)):
+                print(f'{line[s_data]}  ', end='')
+            print()
+
+
+
 ###############################################################################################################
 
 
@@ -176,4 +190,3 @@ params = {
 #           f"found: {vacancy_data.count_of_data_list} = {len(_data)}")
 #
 # HhClass.save_to_file('out_vac.json', temp_list)
-
