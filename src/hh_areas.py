@@ -30,25 +30,34 @@ def get_areas() -> list:
     return areas
 
 
-params_db = {
-    "host": "localhost",
-    "database": "hh",
-    "user": "postgres",
-    "password": "835221",
-}
+# params_db = {
+#     "host": "localhost",
+#     "database": "hh",
+#     "user": "postgres",
+#     # "password": "835221",
+# }
 
 
-# def fun_a(pdb):
+# def fun_a(**pdb):
+#     # try:
+#     #     host = pdb['host']
+#     #     db = pdb['database']
+#     #     usr = pdb['user']
+#     # except KeyError:
+#     #     return None
+#     for i in pdb:
+#         print(pdb[i])
+#
 #     try:
-#         host = pdb['host']
-#         db = pdb['database']
-#         usr = pdb['user']
+#         print(pdb['password'])
 #     except KeyError:
-#         return None
-#     return 1
+#         pdb['password'] = input("Введите пароль базы данных -> ")
+#
+#     print(pdb['password'])
+#     return pdb
 #
 #
-# b = fun_a(params_db)
+# b = fun_a(**params_db)
 # print(b)
 
 
@@ -60,15 +69,15 @@ def create_database(db_name: str, password: str) -> None:
     :return: None
     """
     conn = psycopg2.connect(
-        host="localhost",
-        database="postgres",
-        user="postgres",
+        host='localhost',
+        database='postgres',
+        user='postgres',
         password=password
     )
     conn.autocommit = True
     try:
         cur = conn.cursor()
-        cur.execute(f"CREATE DATABASE {db_name}")
+        cur.execute(f'CREATE DATABASE {db_name}')
     except psycopg2.errors.DuplicateDatabase:
         print('Уже есть база')
     finally:
@@ -85,9 +94,9 @@ def areas_load_to_db(db_name: str, password: str, data_list: list) -> None:
     :return: None
     """
     conn = psycopg2.connect(
-        host="localhost",
+        host='localhost',
         database=db_name,
-        user="postgres",
+        user='postgres',
         password=password
     )
     try:
@@ -109,10 +118,10 @@ def areas_load_to_db(db_name: str, password: str, data_list: list) -> None:
                     # print("Запись существует")
                 for dl_var in data_list:
                     try:
-                        cur.execute("INSERT INTO areas VALUES (%s, %s, %s, %s)", dl_var)
+                        cur.execute('INSERT INTO areas VALUES (%s, %s, %s, %s)', dl_var)
                     except psycopg2.errors.InFailedSqlTransaction:
                         pass
-                        # print("Дубль")
+                        # print('Дубль')
     finally:
         conn.close()
 

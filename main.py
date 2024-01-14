@@ -1,10 +1,39 @@
-from src.hh_areas import *
-from test import get_employers, get_vacancies
-from src.hh_class import *
-from src.db_class import *
+from src.menu_handler import *
+
 
 def main():
     db_name = "hh_ru"
+    db_params = {
+        "host": "localhost",
+        "database": db_name,
+        "user": "postgres",
+        }
+
+    url_employers = 'https://api.hh.ru/employers'
+    url_vacancies = 'https://api.hh.ru/vacancies'
+
+    params_employers = {
+        'per_page': 100,
+        'area': 13,                         # Регион работодателя
+        # 'text': f'NAME:{data}',           # Текст, встречающийся в имени работодателя
+        'only_with_vacancies': True,        # Только открытые вакансии
+        'sort_by': 'by_vacancies_open',     # Сортировка по количеству открытых вакансий (по убыванию)
+        }
+
+    params_vacancies = {
+        'per_page': 100,
+        'area': 113,
+        # 'text': f'NAME:{text}',
+        # "employer_id": emp_id,
+        'only_with_salary': True,
+        }
+
+    db_object = DBManager(**db_params)
+    employers_object = HhClass(url_employers, **params_employers)
+    vacancies_object = HhClass(url_vacancies, **params_vacancies)
+
+    menu_handler = MenuHandler(db_object)
+    menu_handler.menu_one_handler()
 
     # Тестирование функции get_employers()
     # ===============================================
@@ -82,7 +111,13 @@ if __name__ == '__main__':
     # Сохраняем полученный список в файл, для дальнейшей обработки
     # HhClass.save_to_file('src/found_vacancy.json', out_list)
 
-    passwrd = input('Введите пароль для входа в базу данных -> ')
-    db_func = DBManager(passwrd, database="north")
-    lst_print = db_func.get_companies_and_vacancies_count()
-    HhClass.print_data(lst_print)
+    # params_db = {
+    #     "host": "localhost",
+    #     "database": "north",
+    #     "user": "postgres",
+    # }
+    # passwrd = input('Введите пароль для входа в базу данных -> ')
+    # db_func = DBManager(**params_db)
+    # lst_print = db_func.db_connect()
+    # lst_print = db_func.get_companies_and_vacancies_count()
+    # HhClass.print_data(lst_print)

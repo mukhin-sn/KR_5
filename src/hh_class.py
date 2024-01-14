@@ -9,22 +9,22 @@ class HhClass:
     Класс для работы с запросами к сайту hh.ru
     """
 
-    def __init__(self, url: str, params: dict):
+    def __init__(self, url: str, **params):
         self.url = url  # Адрес GET-запроса
         self.params = params  # Параметры GET-запроса
         self.data_list = []  # Список найденных записей
 
-        # количество найденых записей
+        # количество найденных записей
         self.count_of_data_list = (requests.get(self.url, params=self.params).json())["found"]
 
     def __str__(self):
         return f"{self.__class__.__name__}"
 
     def __repr__(self):
-        return (f"host-url = {self.url}\n"
-                f"PARAMS -> {[key_val for key_val in self.params.items()]}\n"
-                f"Number of records found = {self.count_of_data_list}\n"
-                f"стр. {self.page_count()}")
+        return (f'host-url = {self.url}\n'
+                f'PARAMS -> {[key_val for key_val in self.params.items()]}\n'
+                f'Number of records found = {self.count_of_data_list}\n'
+                f'стр. {self.page_count()}')
 
     def get_data(self, param=None) -> list:
         """
@@ -35,7 +35,7 @@ class HhClass:
         if param is None:
             param = self.params
         for page in range(self.page_count()):
-            param["page"] = page
+            param['page'] = page
             temp_data_list = requests.get(self.url, params=param).json()["items"]
             self.data_list.extend(temp_data_list)
             time.sleep(0.2)
@@ -47,7 +47,7 @@ class HhClass:
 
         if not self.data_list:
             self.get_data()
-            print(f"Всего записей: {len(self.data_list)}")
+            print(f'Всего записей: {len(self.data_list)}')
 
         temp_data_list = []
         for dl in self.data_list:
@@ -69,7 +69,7 @@ class HhClass:
 
     def page_count(self) -> int:
         """
-        Метод вычисляет колличество страниц для отображения записей
+        Метод вычисляет количество страниц для отображения записей
         :return: число страниц
         """
 
@@ -105,7 +105,7 @@ class HhClass:
     def id_employers_filter(self):
         if not self.data_list:
             self.get_data()
-        print(f"Всего записей: {len(self.data_list)}")
+        print(f'Всего записей: {len(self.data_list)}')
         out_list = []
         for val_dic in self.data_list:
             out_list.append(val_dic['employer']['id'])
@@ -123,7 +123,6 @@ class HhClass:
             for s_data in range(len(line)):
                 print(f'{line[s_data]}  ', end='')
             print()
-
 
 
 ###############################################################################################################
@@ -145,16 +144,16 @@ class HhClass:
 #
 # print("=" * 300 + "\n")
 
-url = "https://api.hh.ru/vacancies"
-text = 'Python'
-# emp_id = 5178281
-params = {
-    "per_page": 100,
-    "area": 113,
-    "text": f"NAME:{text}",
-    # "employer_id": emp_id,
-    "only_with_salary": True,
-}
+# url = 'https://api.hh.ru/vacancies'
+# text = 'Python'
+# # emp_id = 5178281
+# params = {
+#     'per_page': 100,
+#     'area': 113,
+#     'text': f'NAME:{text}',
+#     # "employer_id": emp_id,
+#     'only_with_salary': True,
+# }
 
 # vac_class = HhClass(url, params)
 # print(vac_class)

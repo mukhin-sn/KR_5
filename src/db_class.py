@@ -6,32 +6,74 @@ class DBManager:
     Класс для работы с данными в БД
     """
 
-    def __init__(self, password, host="localhost", database="postgres", user="postgres"):
-        self.host = host
-        self.user = user
-        self.database = database
-        self.password = password
+    def __init__(self, **params):
+        self.params = params
+        self.conn = None
+        self.cur = None
+        try:
+            psw = self.params['password']
+        except KeyError:
+            self.params['password'] = input('Введите пароль для соединения с базой данных -> ')
+
+    def db_connect(self, auto_comm=False, **params):
+        """
+        Метод устанавливает соединение с базой данных
+        """
+        while True:  # цикл повторяется, пока не введен верный пароль
+            try:
+                self.conn = psycopg2.connect(**params)
+            except UnicodeDecodeError:
+                print('PASSWORD - ERROR\nПопробуйте ещё раз')
+            else:
+                break
+            params['password'] = input('-> ')
+        self.params['password'] = params['password']
+        self.conn.autocommit = auto_comm
+        self.cur = self.conn.cursor()
+
+    def db_disconnect(self):
+        """
+        Метод закрывает соединение с базой данных
+        """
+        self.cur.close()
+        self.conn.commit()
+        self.conn.close()
+
+    def db_create(self):
+        """
+        Метод создания базы данных
+        """
+        params = self.params
+        db_name = params['database']
+        params['database'] = 'postgres'
+        self.db_connect(auto_comm=True, **params)
+        try:
+            self.cur.execute(f'CREATE DATABASE {db_name}')
+        except psycopg2.errors.DuplicateDatabase:
+            # print('База данных существует')
+            pass
+        finally:
+            self.cur.close()
+            self.conn.close()
+
+    @staticmethod
+    def print_data_db(data_list: list[tuple]):
+        for tpl in data_list:
+            for dt in tpl:
+                print(dt, end=' | ')
 
     def get_companies_and_vacancies_count(self) -> list:
         """
         Получает список всех компаний и количество вакансий у каждой компании
         :return:
         """
-        out_lst = []
-        conn = psycopg2.connect(
-            host=self.host,
-            database=self.database,
-            user=self.user,
-            password=self.password
-        )
-        with conn:
-            with conn.cursor() as cur:
-                request = """
-                SELECT * FROM customers
-                """
-                cur.execute(request)
-                out_lst = cur.fetchall()
-        conn.close()
+        self.db_connect(**self.params)
+        request = """
+        SELECT
+        """
+        self.cur.execute(request)
+        out_lst = self.cur.fetchall()
+        self.db_disconnect()
         return out_lst
 
     def get_all_vacancies(self) -> list[dict]:
@@ -40,21 +82,13 @@ class DBManager:
         названия вакансии и зарплаты и ссылки на вакансию
         :return:
         """
-        out_lst = []
-        conn = psycopg2.connect(
-            host=self.host,
-            database=self.database,
-            user=self.user,
-            password=self.password
-        )
-        with conn:
-            with conn.cursor() as cur:
-                request = """
-                        Здесь текст SQL запроса
-                        """
-                cur.execute(request)
-                out_lst = cur.fetchall()
-        conn.close()
+        self.db_connect(**self.params)
+        request = """
+        SELECT
+        """
+        self.cur.execute(request)
+        out_lst = self.cur.fetchall()
+        self.db_disconnect()
         return out_lst
 
     def get_avg_salary(self) -> float:
@@ -63,21 +97,13 @@ class DBManager:
         :return:
         """
         average_salary = None
-        out_lst = []
-        conn = psycopg2.connect(
-            host=self.host,
-            database=self.database,
-            user=self.user,
-            password=self.password
-        )
-        with conn:
-            with conn.cursor() as cur:
-                request = """
-                        Здесь текст SQL запроса
-                        """
-                cur.execute(request)
-                out_lst = cur.fetchall()
-        conn.close()
+        self.db_connect(**self.params)
+        request = """
+        SELECT
+        """
+        self.cur.execute(request)
+        out_lst = self.cur.fetchall()
+        self.db_disconnect()
         return average_salary
 
     def get_vacancies_with_higher_salary(self) -> list:
@@ -86,43 +112,31 @@ class DBManager:
         по всем вакансиям
         :return:
         """
-        out_lst = []
-        conn = psycopg2.connect(
-            host=self.host,
-            database=self.database,
-            user=self.user,
-            password=self.password
-        )
-        with conn:
-            with conn.cursor() as cur:
-                request = """
-                        Здесь текст SQL запроса
-                        """
-                cur.execute(request)
-                out_lst = cur.fetchall()
-        conn.close()
+        self.db_connect(**self.params)
+        request = """
+        SELECT
+        """
+        self.cur.execute(request)
+        out_lst = self.cur.fetchall()
+        self.db_disconnect()
         return out_lst
 
-    def get_vacancies_with_keyword(self, text) -> list:
+    def get_vacancies_with_keyword(self, text: str) -> list:
         """
         Получает список всех вакансий, в названии которых содержатся
         переданные в метод слова
-        :param text: список переданных в метод слов
+        :param text: строка, состоящая из переданных в метод слов
         :return:
         """
-        out_lst = []
-        conn = psycopg2.connect(
-            host=self.host,
-            database=self.database,
-            user=self.user,
-            password=self.password
-        )
-        with conn:
-            with conn.cursor() as cur:
-                request = """
-                        Здесь текст SQL запроса
-                        """
-                cur.execute(request)
-                out_lst = cur.fetchall()
-        conn.close()
+
+        # Формируем список из строки :param text:
+        word_list = [word.strip().lower() for word in text.split(',')]
+
+        self.db_connect(**self.params)
+        request = """
+        SELECT
+        """
+        self.cur.execute(request)
+        out_lst = self.cur.fetchall()
+        self.db_disconnect()
         return out_lst
