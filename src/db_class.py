@@ -56,6 +56,25 @@ class DBManager:
             self.cur.close()
             self.conn.close()
 
+    def load_to_db(self):
+        """
+        Метод записи / добавления данных в базу данных
+        :return:
+        """
+        pass
+
+    def skl_request_for_employer(self):
+        out_data = (f'CREATE TABLE employer'
+                    f'('
+                    f'employer_id int PRIMARY KEY,'
+                    f'employer_name varchar(250),'
+                    f'open_vacancies int,'
+                    f'employer_url varchar(100)'
+                    f')')
+
+    def skl_request_for_vacancies(self):
+        pass
+
     @staticmethod
     def print_data_db(data_list: list[tuple]):
         for tpl in data_list:

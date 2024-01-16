@@ -7,7 +7,7 @@ class MenuHandler:
     Класс для работы с меню программы
     """
 
-    def __init__(self, db_obj: DBManager):
+    def __init__(self, db_obj: DBManager, hh_obj: HhClass):
 
         # Главное меню программы
         self.menu_1 = {'1': 'Работа с запросами к сайту hh.ru',
@@ -34,8 +34,9 @@ class MenuHandler:
 
         self.answers_list = {'1': 'да', '2': 'нет'}
         self.answer = ''
-        self.hh_obj = ''
+        self.hh_obj = hh_obj
         self.db_obj = db_obj
+        self.file_employers_id = 'file_employers_id.json'
 
     def __str__(self):
         return f'{self.__class__.__name__}'
@@ -142,8 +143,30 @@ class MenuHandler:
             self.answer = self.print_menu(self.menu_2)
             if self.answer == '4':
                 break
+
             elif self.answer == '1':
-                pass
+                self.out_message('Введите поисковый запрос:\n'
+                                 'Слова, которые должны быть в названии вакансии, '
+                                 'перечислите через запятую')
+                answer = self.input_answer()
+                self.out_message('Ожидайте, обработка запроса займёт некоторое время')
+                answer = HhClass.get_text(answer)
+                self.hh_obj.params['text'] = f'NAME:{answer}'
+                self.hh_obj.get_data()
+                self.hh_obj.print_data_list()
+                any_key = input('Для продолжения нажмите "Enter"')
+                self.out_message(f'Список ID - компаний, содержащих '
+                                 f'ключевые слова,\nбудет сохранен в файл '
+                                 f'{self.file_employers_id}')
+                emp_id_list = self.hh_obj.id_employers_filter()
+                HhClass.save_to_file(self.file_employers_id, emp_id_list)
+                for emp_id in emp_id_list:
+                    HhClass.employers_with_vacancies(emp_id)
+                answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
+                if answer == '1':
+                    self.db_obj.load_to_db()
+                    print('Ok')
+
             elif self.answer == '2':
                 pass
             else:
@@ -161,3 +184,7 @@ class MenuHandler:
                 self.menu_two_handler()
             else:
                 self.menu_three_handler()
+
+    def second_menu(self, message):
+        self.out_message(message)
+        return self.print_menu(self.answers_list)

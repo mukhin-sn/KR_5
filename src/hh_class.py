@@ -15,7 +15,10 @@ class HhClass:
         self.data_list = []  # Список найденных записей
 
         # количество найденных записей
-        self.count_of_data_list = (requests.get(self.url, params=self.params).json())["found"]
+        if self.params == {}:
+            self.count_of_data_list = 0
+        else:
+            self.count_of_data_list = (requests.get(self.url, params=self.params).json())["found"]
 
     def __str__(self):
         return f"{self.__class__.__name__}"
@@ -60,7 +63,6 @@ class HhClass:
 
         if not self.data_list:
             self.get_data()
-            print(f'Всего записей: {len(self.data_list)}')
 
         temp_data_list = []
         for dl in self.data_list:
@@ -78,6 +80,7 @@ class HhClass:
                   f"Название вакансии: {dl['name']}"
                   # f"Количество открытых вакансий: {dl['open_vacancies']}"
                   )
+        print(f'Всего записей: {len(self.data_list)}')
         return temp_data_list
 
     @staticmethod
@@ -109,11 +112,11 @@ class HhClass:
         """
         if not self.data_list:
             self.get_data()
-        print(f'Всего записей: {len(self.data_list)}')
         out_list = []
         for val_dic in self.data_list:
             out_list.append(val_dic['employer']['id'])
         out_list = set(out_list)
+        print(f'Всего записей: {len(out_list)}')
         return list(out_list)
 
     @staticmethod
@@ -133,21 +136,34 @@ class HhClass:
         """
         Метод формирует строку для поля param['text']
         :param txt: Входная строка из которой формируется выходная строка
-        :return: Выыходная строка
+        :return: Выходная строка
         """
-        # Формируем список из строки :param text: удаляя запятые и пробелы
+        # Формируем список из строки :param txt: удаляя запятые и пробелы
         word_list = [word.strip().lower() for word in txt.split(',')]
 
         # Формируем выходную строку
         return 'AND'.join(word_list)
 
+    @staticmethod
+    def employers_with_vacancies(employers_id) -> dict:
+        """
+        Метод ищет количество открытых вакансий у работодателя
+        :return: словарь {employers_id: open_vacancies}
+        """
+        url = f"https://api.hh.ru/employers/{employers_id}"
+        temp_data = requests.get(url).json()
+        print(f'ID: {temp_data["id"]} | Название компании: {temp_data["name"]} | '
+              f'количество открытых вакансий: {temp_data["open_vacancies"]}')
+        return temp_data
+
 
 ###############################################################################################################
 
-employers_id = "41862"
-url = f"https://api.hh.ru/employers/{employers_id}"
-temp_data = requests.get(url).json()
-print(f'{temp_data["id"]} | {temp_data["name"]} | {temp_data["open_vacancies"]}')
+# employers_id = "41862"
+# url = f"https://api.hh.ru/employers/{employers_id}"
+# temp_data = requests.get(url).json()
+# print(f'{temp_data["id"]} | {temp_data["name"]} | {temp_data["open_vacancies"]}')
+
 # for i in temp_data:
     # print(i, end=': ')
     # print(temp_data[i])

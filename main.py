@@ -14,7 +14,7 @@ def main():
 
     params_employers = {
         'per_page': 100,
-        'area': 13,                         # Регион работодателя
+        'area': 113,                        # Регион работодателя
         # 'text': f'NAME:{data}',           # Текст, встречающийся в имени работодателя
         'only_with_vacancies': True,        # Только открытые вакансии
         'sort_by': 'by_vacancies_open',     # Сортировка по количеству открытых вакансий (по убыванию)
@@ -32,7 +32,7 @@ def main():
     employers_object = HhClass(url_employers, **params_employers)
     vacancies_object = HhClass(url_vacancies, **params_vacancies)
 
-    menu_handler = MenuHandler(db_object)
+    menu_handler = MenuHandler(db_object, vacancies_object)
     menu_handler.menu_one_handler()
 
     # Тестирование функции get_employers()
