@@ -26,6 +26,19 @@ class HhClass:
                 f'Number of records found = {self.count_of_data_list}\n'
                 f'стр. {self.page_count()}')
 
+    def page_count(self) -> int:
+        """
+        Метод вычисляет количество страниц для отображения записей
+        :return: число страниц
+        """
+
+        page_count = self.count_of_data_list // 100
+        if page_count >= 20:
+            page_count = 20
+        elif (self.count_of_data_list % 100) > 0:
+            page_count += 1
+        return page_count
+
     def get_data(self, param=None) -> list:
         """
         Метод получения данных с сайта hh.ru
@@ -67,19 +80,6 @@ class HhClass:
                   )
         return temp_data_list
 
-    def page_count(self) -> int:
-        """
-        Метод вычисляет количество страниц для отображения записей
-        :return: число страниц
-        """
-
-        page_count = self.count_of_data_list // 100
-        if page_count >= 20:
-            page_count = 20
-        elif (self.count_of_data_list % 100) > 0:
-            page_count += 1
-        return page_count
-
     @staticmethod
     def save_to_file(file_name: str, dt_lst: list) -> None:
         """
@@ -102,7 +102,11 @@ class HhClass:
             out_list = json.load(file)
             return out_list
 
-    def id_employers_filter(self):
+    def id_employers_filter(self) -> list:
+        """
+        Метод убирает повторяющиеся ID-работодателей
+        :return:
+        """
         if not self.data_list:
             self.get_data()
         print(f'Всего записей: {len(self.data_list)}')
@@ -124,20 +128,45 @@ class HhClass:
                 print(f'{line[s_data]}  ', end='')
             print()
 
+    @staticmethod
+    def get_text(txt: str) -> str:
+        """
+        Метод формирует строку для поля param['text']
+        :param txt: Входная строка из которой формируется выходная строка
+        :return: Выыходная строка
+        """
+        # Формируем список из строки :param text: удаляя запятые и пробелы
+        word_list = [word.strip().lower() for word in txt.split(',')]
+
+        # Формируем выходную строку
+        return 'AND'.join(word_list)
+
 
 ###############################################################################################################
 
+employers_id = "41862"
+url = f"https://api.hh.ru/employers/{employers_id}"
+temp_data = requests.get(url).json()
+print(f'{temp_data["id"]} | {temp_data["name"]} | {temp_data["open_vacancies"]}')
+# for i in temp_data:
+    # print(i, end=': ')
+    # print(temp_data[i])
+# print(temp_data)
 
 # url = "https://api.hh.ru/employers"
+# data = ''
+
 # params = {
 #         "per_page": 100,
-#         "area": 1,                      # Регион работодателя
+#         "area": 113,                      # Регион работодателя
 #         # "text": f"NAME:{data}",           # Текст, встречающийся в имени работодателя
 #         # "only_with_vacancies": True,      # Только открытые вакансии
-#         "sort_by": "by_vacancies_open",     # Сортировка по количеству открытых вакансий по убыванию
+#         # "sort_by": "by_vacancies_open",     # Сортировка по количеству открытых вакансий по убыванию
 #     }
-#
-# employ_class = HhClass(url, params)
+# employers_id = '41862'
+# params['text'] = f'!COMPANY_ID:{employers_id}'
+
+# employ_class = HhClass(url, **params)
 # print(employ_class)
 # print(repr(employ_class))
 # employ_class.print_data_list()
@@ -153,14 +182,14 @@ class HhClass:
 #     'text': f'NAME:{text}',
 #     # "employer_id": emp_id,
 #     'only_with_salary': True,
-# }
+#     }
 
-# vac_class = HhClass(url, params)
+# vac_class = HhClass(url, **params)
 # print(vac_class)
 # print(repr(vac_class))
-# data_lst = vac_class.print_data_list()
+# # data_lst = vac_class.print_data_list()
 # out_lst = vac_class.get_data()
-
+#
 # filter_id = vac_class.id_employers_filter()
 # print(len(filter_id))
 # vac_class.save_to_file('filter_id.json', filter_id)
@@ -181,7 +210,7 @@ class HhClass:
 #         "employer_id": obj_files,
 #         "only_with_salary": True,
 #     }
-#     vacancy_data = HhClass(url, params)
+#     vacancy_data = HhClass(url, **params)
 #     _data = vacancy_data.get_data()
 #     out_data = {obj_files: _data}
 #     temp_list.append(out_data)
