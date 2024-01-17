@@ -118,7 +118,7 @@ def areas_load_to_db(db_name: str, password: str, data_list: list) -> None:
                     # print("Запись существует")
                 for dl_var in data_list:
                     try:
-                        cur.execute('INSERT INTO areas VALUES (%s, %s, %s, %s)', dl_var)
+                        cur.executemany(f'INSERT INTO areas VALUES (%s, %s, %s, %s)', dl_var)
                     except psycopg2.errors.InFailedSqlTransaction:
                         pass
                         # print('Дубль')

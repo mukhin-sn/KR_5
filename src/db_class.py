@@ -1,4 +1,5 @@
 import psycopg2
+from src.db_data import *
 
 
 class DBManager:
@@ -10,6 +11,7 @@ class DBManager:
         self.params = params
         self.conn = None
         self.cur = None
+        self.sql_request = ''
         try:
             psw = self.params['password']
         except KeyError:
@@ -56,24 +58,27 @@ class DBManager:
             self.cur.close()
             self.conn.close()
 
-    def load_to_db(self):
+    def load_to_db(self, tab_name: str, data_list: list[tuple]):
         """
         Метод записи / добавления данных в базу данных
         :return:
         """
-        pass
+        self.db_connect(**self.params)
 
-    def skl_request_for_employer(self):
-        out_data = (f'CREATE TABLE employer'
-                    f'('
-                    f'employer_id int PRIMARY KEY,'
-                    f'employer_name varchar(250),'
-                    f'open_vacancies int,'
-                    f'employer_url varchar(100)'
-                    f')')
-
-    def skl_request_for_vacancies(self):
-        pass
+        # Проверка существования записи
+        try:
+            self.cur.execute(self.sql_request)
+            out_str = f'INSERT INTO {tab_name} VALUES ({"%s, " * (len(data_list[0]) - 1)}%s)'
+            self.cur.executemany(out_str, data_list)
+        except psycopg2.errors.DuplicateTable:
+            pass
+        # Запись данных в базу
+        # Проверка на повторение записи
+        except psycopg2.errors.InFailedSqlTransaction:
+            # Если был повтор
+            pass
+        finally:
+            self.db_disconnect()
 
     @staticmethod
     def print_data_db(data_list: list[tuple]):

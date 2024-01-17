@@ -37,6 +37,10 @@ class MenuHandler:
         self.hh_obj = hh_obj
         self.db_obj = db_obj
         self.file_employers_id = 'file_employers_id.json'
+        self.hi_message = ('Введите поисковый запрос:\n'
+                           'Слова, которые должны быть в названии вакансии, '
+                           'перечислите через запятую')
+        self.any_key = ''
 
     def __str__(self):
         return f'{self.__class__.__name__}'
@@ -129,9 +133,7 @@ class MenuHandler:
             elif self.answer == '4':
                 self.db_obj.get_vacancies_with_higher_salary()
             else:
-                self.out_message('Введите поисковый запрос:\n'
-                                 'Слова, которые должны быть в названии вакансии, '
-                                 'перечислите через запятую')
+                self.out_message(self.hi_message)
                 answer = self.input_answer()
                 self.db_obj.get_vacancies_with_keyword(answer)
 
@@ -145,16 +147,14 @@ class MenuHandler:
                 break
 
             elif self.answer == '1':
-                self.out_message('Введите поисковый запрос:\n'
-                                 'Слова, которые должны быть в названии вакансии, '
-                                 'перечислите через запятую')
+                self.out_message(self.hi_message)
                 answer = self.input_answer()
                 self.out_message('Ожидайте, обработка запроса займёт некоторое время')
                 answer = HhClass.get_text(answer)
                 self.hh_obj.params['text'] = f'NAME:{answer}'
                 self.hh_obj.get_data()
                 self.hh_obj.print_data_list()
-                any_key = input('Для продолжения нажмите "Enter"')
+                self.any_key = input('Для продолжения нажмите "Enter"')
                 self.out_message(f'Список ID - компаний, содержащих '
                                  f'ключевые слова,\nбудет сохранен в файл '
                                  f'{self.file_employers_id}')
