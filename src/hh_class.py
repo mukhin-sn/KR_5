@@ -58,6 +58,18 @@ class HhClass:
 
         return self.data_list
 
+    def data_list_to_db(self) -> list[tuple]:
+        """
+        Метод формирует список данных для передачи в базу  данных
+        :return:
+        """
+        out_lst_tuple = []
+        temp_tuple = ()
+        for data in self.data_list:
+            
+            out_lst_tuple.append(temp_tuple)
+        return out_lst_tuple
+
     def print_data_list(self) -> list:
         """ Метод вывода в консоль полученного, в результате GET-запроса, списка """
 
@@ -156,7 +168,6 @@ class HhClass:
               f'количество открытых вакансий: {temp_data["open_vacancies"]}')
         return temp_data
 
-
 ###############################################################################################################
 
 # employers_id = "41862"
@@ -165,8 +176,8 @@ class HhClass:
 # print(f'{temp_data["id"]} | {temp_data["name"]} | {temp_data["open_vacancies"]}')
 
 # for i in temp_data:
-    # print(i, end=': ')
-    # print(temp_data[i])
+# print(i, end=': ')
+# print(temp_data[i])
 # print(temp_data)
 
 # url = "https://api.hh.ru/employers"

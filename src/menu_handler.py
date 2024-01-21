@@ -164,7 +164,7 @@ class MenuHandler:
                     HhClass.employers_with_vacancies(emp_id)
                 answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
                 if answer == '1':
-                    self.db_obj.load_to_db()
+                    self.db_obj.load_to_db('employers', )
                     print('Ok')
 
             elif self.answer == '2':
