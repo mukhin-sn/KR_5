@@ -1,6 +1,5 @@
 import json
 import time
-
 import requests
 
 
@@ -130,9 +129,9 @@ class HhClass:
             self.get_data()
         out_list = []
         for val_dic in self.data_list:
-            out_list.append(val_dic['employer']['id'])
+            out_list.append(val_dic[1])
         out_list = set(out_list)
-        print(f'Всего записей: {len(out_list)}')
+        print(f'Всего уникальных записей: {len(out_list)}')
         return list(out_list)
 
     @staticmethod
@@ -161,36 +160,66 @@ class HhClass:
         return 'AND'.join(word_list)
 
     @staticmethod
-    def employers_with_vacancies(employers_id) -> dict:
+    def get_list_id(request: str) -> list:
         """
-        Метод ищет количество открытых вакансий у работодателя
-        :return: словарь {employers_id: open_vacancies}
+        Метод возвращает список ID - работодателей
+        :param request: строка, из которой надо выбрать ID
+        :return: список ID работодателей
         """
-        url = f"https://api.hh.ru/employers/{employers_id}"
-        temp_data = requests.get(url).json()
-        print(f'ID: {temp_data["id"]} | Название компании: {temp_data["name"]} | '
-              f'количество открытых вакансий: {temp_data["open_vacancies"]}')
-        return temp_data
+        out_list = []
+        temp_list = [word.strip().lower() for word in request.split(',')]
+        for word in temp_list:
+            if word.isdigit():
+                out_list.append(word)
+        out_list = set(out_list)
+        return list(out_list)
+
+    # @staticmethod
+    # def employers_with_vacancies(employers_id) -> dict:
+    #     """
+    #     Метод ищет количество открытых вакансий у работодателя
+    #     :return: словарь {employers_id: open_vacancies}
+    #     """
+    #     url = f"https://api.hh.ru/employers/{employers_id}"
+    #     temp_data = requests.get(url).json()
+    #     print(f'ID: {temp_data["id"]} | Название компании: {temp_data["name"]} | '
+    #           f'количество открытых вакансий: {temp_data["open_vacancies"]}')
+    #     return temp_data
 
 
 class EmployersHhClass(HhClass):
 
     def __init__(self, url: str, employer_id: str, **params):
         super().__init__(url, **params)
-        self.url = f'{url}/{employer_id}'
+        self.employer_id = employer_id
+        self.url = url
 
         # количество открытых вакансий
-        self.count_of_data_list = (requests.get(self.url).json())["open_vacancies"]
+        if self.employer_id == '':
+            self.count_of_data_list = 0
+        else:
+            self.count_of_data_list = (requests.get(f'{self.url}/{self.employer_id}').json())["open_vacancies"]
+
+        # self.count_of_data_list = (requests.get(self.url).json())["open_vacancies"]
 
     def get_data(self, **kwargs) -> list[tuple]:
         """
-        Метод возврвщает список данных по работодателю
+        Метод возвращает список данных по работодателю
         :param kwargs:
         :return:
         """
         self.data_list = []
-        temp_dict = requests.get(self.url).json()
-        self.data_list.append((temp_dict['id'], temp_dict['name'], temp_dict['open_vacancies'], temp_dict['site_url']))
+        # print(f'{self.url}/{self.employer_id}')
+        temp_dict = requests.get(f'{self.url}/{self.employer_id}').json()
+        try:
+            self.data_list.append((temp_dict['id'],
+                                   temp_dict['name'],
+                                   temp_dict['open_vacancies'],
+                                   temp_dict['site_url']))
+        except KeyError:
+            print(f'Работодатель с ID {self.employer_id} не найден')
+            return None
+
         return self.data_list
 
     def print_data_list(self):

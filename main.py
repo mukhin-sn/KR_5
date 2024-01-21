@@ -1,4 +1,5 @@
 from src.db_data import *
+from src.hh_class import *
 from src.menu_handler import *
 
 
@@ -33,10 +34,10 @@ def main():
     db_object.create_table(sql_for_employers_create)
     db_object.create_table(sql_for_vacancies_create)
 
-    employers_object = HhClass(url_employers, **params_employers)
+    employers_object = EmployersHhClass(url_employers, '', **params_employers)
     vacancies_object = HhClass(url_vacancies, **params_vacancies)
 
-    menu_handler = MenuHandler(db_object, vacancies_object)
+    menu_handler = MenuHandler(db_object, vacancies_object, employers_object)
     menu_handler.menu_one_handler()
 
     # Тестирование функции get_employers()

@@ -25,7 +25,7 @@ class DBManager:
         while True:  # цикл повторяется, пока не введен верный пароль
             try:
                 self.conn = psycopg2.connect(**params)
-            except psycopg2.OperationalError: # UnicodeDecodeError:
+            except: #psycopg2.OperationalError: # UnicodeDecodeError:
                 print('PASSWORD - ERROR\nПопробуйте ещё раз')
             else:
                 break
@@ -56,6 +56,7 @@ class DBManager:
             # print('База данных существует')
             pass
         finally:
+            params['database'] = db_name
             self.cur.close()
             self.conn.close()
 
@@ -88,7 +89,8 @@ class DBManager:
         # Запись данных в базу
         # Проверка на повторение записи
         except psycopg2.errors.InFailedSqlTransaction:
-            # Если был повтор
+            pass
+        except psycopg2.errors.UniqueViolation:
             pass
         finally:
             self.db_disconnect()

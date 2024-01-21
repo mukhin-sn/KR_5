@@ -1,5 +1,5 @@
 from src.db_class import DBManager
-from src.hh_class import HhClass
+from src.hh_class import HhClass, EmployersHhClass
 
 
 class MenuHandler:
@@ -7,7 +7,7 @@ class MenuHandler:
     Класс для работы с меню программы
     """
 
-    def __init__(self, db_obj: DBManager, hh_obj: HhClass):
+    def __init__(self, db_obj: DBManager, vacancies_object: HhClass, employers_object: EmployersHhClass):
 
         # Главное меню программы
         self.menu_1 = {'1': 'Работа с запросами к сайту hh.ru',
@@ -34,7 +34,8 @@ class MenuHandler:
 
         self.answers_list = {'1': 'да', '2': 'нет'}
         self.answer = ''
-        self.hh_obj = hh_obj
+        self.vacancies_object = vacancies_object
+        self.employers_object = employers_object
         self.db_obj = db_obj
         self.file_employers_id = 'file_employers_id.json'
         self.hi_message = ('Введите поисковый запрос:\n'
@@ -141,6 +142,8 @@ class MenuHandler:
         """
         Метод обработки меню работы с запросами к сайту hh.ru
         """
+        # Список, для записи в базу данных
+        emp_list = []
         while True:
             self.answer = self.print_menu(self.menu_2)
             if self.answer == '4':
@@ -151,24 +154,38 @@ class MenuHandler:
                 answer = self.input_answer()
                 self.out_message('Ожидайте, обработка запроса займёт некоторое время')
                 answer = HhClass.get_text(answer)
-                self.hh_obj.params['text'] = f'NAME:{answer}'
-                self.hh_obj.get_data()
-                # self.hh_obj.print_data_list()
+                self.vacancies_object.params['text'] = f'NAME:{answer}'
+                self.vacancies_object.get_data()
+                self.vacancies_object.print_data_list()
                 self.any_key = input('Для продолжения нажмите "Enter"')
                 self.out_message(f'Список ID - компаний, содержащих '
                                  f'ключевые слова,\nбудет сохранен в файл '
                                  f'{self.file_employers_id}')
-                emp_id_list = self.hh_obj.id_employers_filter()
+                emp_id_list = self.vacancies_object.id_employers_filter()
+                # print(emp_id_list)
                 HhClass.save_to_file(self.file_employers_id, emp_id_list)
+                self.out_message('Ожидайте, формирование списка работодателей займёт некоторое время')
                 for emp_id in emp_id_list:
-                    HhClass.employers_with_vacancies(emp_id)
+                    self.employers_object.employer_id = emp_id
+                    emp_list.append(self.employers_object.get_data()[0])
+                    # HhClass.employers_with_vacancies(emp_id)
                 answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
                 if answer == '1':
-                    self.db_obj.load_to_db('employers', )
-                    print('Ok')
-
+                    self.db_obj.load_to_db('employers', emp_list)
             elif self.answer == '2':
-                pass
+                emp_list.clear()
+                self.out_message('Введите ID - работодателя через запятую')
+                answer = self.input_answer()
+                emp_id_list = HhClass.get_list_id(answer)
+                if not emp_id_list:
+                    self.out_message('В веденных данных нет ID.\nПопробуйте ещё раз.')
+                    continue
+                for emp_id in emp_id_list:
+                    self.employers_object.employer_id = emp_id
+                    emp_list.append(self.employers_object.get_data()[0])
+                answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
+                if answer == '1':
+                    self.db_obj.load_to_db('employers', emp_list)
             else:
                 pass
 
