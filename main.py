@@ -1,3 +1,4 @@
+from src.db_data import *
 from src.menu_handler import *
 
 
@@ -29,6 +30,9 @@ def main():
         }
 
     db_object = DBManager(**db_params)
+    db_object.create_table(sql_for_employers_create)
+    db_object.create_table(sql_for_vacancies_create)
+
     employers_object = HhClass(url_employers, **params_employers)
     vacancies_object = HhClass(url_vacancies, **params_vacancies)
 

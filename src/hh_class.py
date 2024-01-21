@@ -42,58 +42,62 @@ class HhClass:
             page_count += 1
         return page_count
 
-    def get_data(self, param=None) -> list:
+    def get_data(self, param=None) -> list[tuple]:
         """
         Метод получения данных с сайта hh.ru
-        :return: Список полученных, в результате GET-запроса, данных
+        :return: Список полученных, в результате GET-запроса, данных,
+        готовых для передачи в базу данных
         """
 
+        self.data_list = []
         if param is None:
             param = self.params
         for page in range(self.page_count()):
             param['page'] = page
             temp_data_list = requests.get(self.url, params=param).json()["items"]
-            self.data_list.extend(temp_data_list)
+            for tmp_lst in temp_data_list:
+                temp_data_tuple = (tmp_lst['id'],
+                                   tmp_lst['employer']['id'],
+                                   tmp_lst['name'],
+                                   tmp_lst['url'],
+                                   tmp_lst['salary']['from'],
+                                   tmp_lst['salary']['to'],
+                                   tmp_lst['salary']['currency'],)
+                self.data_list.append(temp_data_tuple)
+            # self.data_list.extend(temp_data_list)
             time.sleep(0.2)
 
         return self.data_list
 
-    def data_list_to_db(self) -> list[tuple]:
-        """
-        Метод формирует список данных для передачи в базу  данных
-        :return:
-        """
-        out_lst_tuple = []
-        temp_tuple = ()
-        for data in self.data_list:
-            
-            out_lst_tuple.append(temp_tuple)
-        return out_lst_tuple
+    # def data_list_to_db(self) -> list[tuple]:
+    #     """
+    #     Метод формирует список данных для передачи в базу  данных
+    #     :return:
+    #     """
+    #     out_lst_tuple = []
+    #     temp_tuple = ()
+    #     for data in self.data_list:
+    #         out_lst_tuple.append(temp_tuple)
+    #     return out_lst_tuple
 
-    def print_data_list(self) -> list:
+    def print_data_list(self):
         """ Метод вывода в консоль полученного, в результате GET-запроса, списка """
 
         if not self.data_list:
             self.get_data()
-
-        temp_data_list = []
+        print('ID вакансии | '
+              'ID работодателя | '
+              'Название вакансии | '
+              'Ссылка на вакансию | '
+              'Зарплата от | '
+              'Зарплата до | '
+              'Валюта')
+        print('-' * 108)
         for dl in self.data_list:
-            # print(dl)
-            temp_dic = dict(
-                id_empl=dl['employer']['id'],
-                name_empl=dl['employer']['name'],
-                id_vac=dl['id'],
-                name_vac=dl['name'],
-            )
-            temp_data_list.append(temp_dic)
-            print(f"ID employer: {dl['employer']['id']}; "
-                  f"Название компании: {dl['employer']['name']}; "
-                  f"ID вакансии: {dl['id']}; "
-                  f"Название вакансии: {dl['name']}"
-                  # f"Количество открытых вакансий: {dl['open_vacancies']}"
-                  )
+            for tpl in dl:
+                print(tpl, end=' | ')
+            print()
         print(f'Всего записей: {len(self.data_list)}')
-        return temp_data_list
 
     @staticmethod
     def save_to_file(file_name: str, dt_lst: list) -> None:
@@ -168,12 +172,48 @@ class HhClass:
               f'количество открытых вакансий: {temp_data["open_vacancies"]}')
         return temp_data
 
+
+class EmployersHhClass(HhClass):
+
+    def __init__(self, url: str, employer_id: str, **params):
+        super().__init__(url, **params)
+        self.url = f'{url}/{employer_id}'
+
+        # количество открытых вакансий
+        self.count_of_data_list = (requests.get(self.url).json())["open_vacancies"]
+
+    def get_data(self, **kwargs) -> list[tuple]:
+        """
+        Метод возврвщает список данных по работодателю
+        :param kwargs:
+        :return:
+        """
+        self.data_list = []
+        temp_dict = requests.get(self.url).json()
+        self.data_list.append((temp_dict['id'], temp_dict['name'], temp_dict['open_vacancies'], temp_dict['site_url']))
+        return self.data_list
+
+    def print_data_list(self):
+        """ Метод вывода в консоль полученного, в результате GET-запроса, списка """
+
+        if not self.data_list:
+            self.get_data()
+        print('ID работодателя | '
+              'Название работодателя | '
+              'Количество открытых вакансий | '
+              'Ссылка на работодателя')
+        print('-' * 96)
+        for dl in self.data_list:
+            for tpl in dl:
+                print(tpl, end=' | ')
+            print()
+
 ###############################################################################################################
 
-# employers_id = "41862"
-# url = f"https://api.hh.ru/employers/{employers_id}"
+# employer_id = "41862"
+# url = f"https://api.hh.ru/employers/{employer_id}"
 # temp_data = requests.get(url).json()
-# print(f'{temp_data["id"]} | {temp_data["name"]} | {temp_data["open_vacancies"]}')
+# print(f'{temp_data["id"]} | {temp_data["name"]} | {temp_data["open_vacancies"]} | {temp_data["site_url"]}')
 
 # for i in temp_data:
 # print(i, end=': ')
@@ -187,11 +227,16 @@ class HhClass:
 #         "per_page": 100,
 #         "area": 113,                      # Регион работодателя
 #         # "text": f"NAME:{data}",           # Текст, встречающийся в имени работодателя
-#         # "only_with_vacancies": True,      # Только открытые вакансии
-#         # "sort_by": "by_vacancies_open",     # Сортировка по количеству открытых вакансий по убыванию
+#         "only_with_vacancies": True,      # Только открытые вакансии
+#         "sort_by": "by_vacancies_open",     # Сортировка по количеству открытых вакансий по убыванию
 #     }
-# employers_id = '41862'
-# params['text'] = f'!COMPANY_ID:{employers_id}'
+# employer_id = '41862'
+# params['text'] = f'!COMPANY_ID:{employer_id}'
+
+# empl_obj = EmployersHhClass(url, employer_id)
+# print(repr(empl_obj))
+# print(empl_obj.get_data())
+# empl_obj.print_data_list()
 
 # employ_class = HhClass(url, **params)
 # print(employ_class)
@@ -202,21 +247,25 @@ class HhClass:
 
 # url = 'https://api.hh.ru/vacancies'
 # text = 'Python'
-# # emp_id = 5178281
+# emp_id = 5178281
 # params = {
 #     'per_page': 100,
 #     'area': 113,
-#     'text': f'NAME:{text}',
-#     # "employer_id": emp_id,
+#     # 'text': f'NAME:{text}',
+#     "employer_id": emp_id,
 #     'only_with_salary': True,
-#     }
+# }
 
 # vac_class = HhClass(url, **params)
-# print(vac_class)
-# print(repr(vac_class))
-# # data_lst = vac_class.print_data_list()
+# # print(vac_class)
+# # print(repr(vac_class))
+# data_lst = vac_class.print_data_list()
 # out_lst = vac_class.get_data()
-#
+# print(out_lst)
+# for i in out_lst:
+#     print(i)
+
+
 # filter_id = vac_class.id_employers_filter()
 # print(len(filter_id))
 # vac_class.save_to_file('filter_id.json', filter_id)

@@ -153,7 +153,7 @@ class MenuHandler:
                 answer = HhClass.get_text(answer)
                 self.hh_obj.params['text'] = f'NAME:{answer}'
                 self.hh_obj.get_data()
-                self.hh_obj.print_data_list()
+                # self.hh_obj.print_data_list()
                 self.any_key = input('Для продолжения нажмите "Enter"')
                 self.out_message(f'Список ID - компаний, содержащих '
                                  f'ключевые слова,\nбудет сохранен в файл '

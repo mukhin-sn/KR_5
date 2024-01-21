@@ -1,5 +1,4 @@
 import psycopg2
-from src.db_data import *
 
 
 class DBManager:
@@ -17,6 +16,8 @@ class DBManager:
         except KeyError:
             self.params['password'] = input('Введите пароль для соединения с базой данных -> ')
 
+        self.db_create()
+
     def db_connect(self, auto_comm=False, **params):
         """
         Метод устанавливает соединение с базой данных
@@ -24,7 +25,7 @@ class DBManager:
         while True:  # цикл повторяется, пока не введен верный пароль
             try:
                 self.conn = psycopg2.connect(**params)
-            except UnicodeDecodeError:
+            except psycopg2.OperationalError: # UnicodeDecodeError:
                 print('PASSWORD - ERROR\nПопробуйте ещё раз')
             else:
                 break
@@ -58,6 +59,21 @@ class DBManager:
             self.cur.close()
             self.conn.close()
 
+    def create_table(self, package: str):
+        """
+        Метод создания таблицы
+        :param package: данные для создания таблицы
+        :return:
+        """
+        self.db_connect(**self.params)
+        try:
+            out_data = package
+            self.cur.execute(out_data)
+        except psycopg2.errors.DuplicateTable:
+            pass
+        finally:
+            self.db_disconnect()
+
     def load_to_db(self, tab_name: str, data_list: list[tuple]):
         """
         Метод записи / добавления данных в базу данных
@@ -65,13 +81,10 @@ class DBManager:
         """
         self.db_connect(**self.params)
 
-        # Проверка существования записи
         try:
-            self.cur.execute(self.sql_request)
+            # self.cur.execute(self.sql_request)
             out_str = f'INSERT INTO {tab_name} VALUES ({"%s, " * (len(data_list[0]) - 1)}%s)'
             self.cur.executemany(out_str, data_list)
-        except psycopg2.errors.DuplicateTable:
-            pass
         # Запись данных в базу
         # Проверка на повторение записи
         except psycopg2.errors.InFailedSqlTransaction:
