@@ -40,6 +40,8 @@ def main():
     menu_handler = MenuHandler(db_object, vacancies_object, employers_object)
     menu_handler.menu_one_handler()
 
+    # print(db_object.get_id_employers())
+
     # Тестирование функции get_employers()
     # ===============================================
     # emplr = 'Газпром'

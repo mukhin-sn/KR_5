@@ -48,7 +48,7 @@ class HhClass:
         готовых для передачи в базу данных
         """
 
-        self.data_list = []
+        data_list = []
         if param is None:
             param = self.params
         for page in range(self.page_count()):
@@ -62,11 +62,11 @@ class HhClass:
                                    tmp_lst['salary']['from'],
                                    tmp_lst['salary']['to'],
                                    tmp_lst['salary']['currency'],)
-                self.data_list.append(temp_data_tuple)
+                data_list.append(temp_data_tuple)
             # self.data_list.extend(temp_data_list)
             time.sleep(0.2)
-
-        return self.data_list
+            self.data_list = data_list
+        return data_list
 
     # def data_list_to_db(self) -> list[tuple]:
     #     """
@@ -208,19 +208,19 @@ class EmployersHhClass(HhClass):
         :param kwargs:
         :return:
         """
-        self.data_list = []
+        data_list = []
         # print(f'{self.url}/{self.employer_id}')
         temp_dict = requests.get(f'{self.url}/{self.employer_id}').json()
         try:
-            self.data_list.append((temp_dict['id'],
-                                   temp_dict['name'],
-                                   temp_dict['open_vacancies'],
-                                   temp_dict['site_url']))
+            data_list.append((temp_dict['id'],
+                              temp_dict['name'],
+                              temp_dict['open_vacancies'],
+                              temp_dict['site_url']))
         except KeyError:
-            print(f'Работодатель с ID {self.employer_id} не найден')
+            # print(f'Работодатель с ID {self.employer_id} не найден')
             return None
-
-        return self.data_list
+        self.data_list = data_list
+        return data_list
 
     def print_data_list(self):
         """ Метод вывода в консоль полученного, в результате GET-запроса, списка """

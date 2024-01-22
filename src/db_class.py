@@ -95,6 +95,23 @@ class DBManager:
         finally:
             self.db_disconnect()
 
+    def get_id_employers(self) -> list:
+        """
+        Метод получения списка ID - работодателей из базы данных
+        :return:
+        """
+        out_lst = []
+        self.db_connect(**self.params)
+        request = """
+        SELECT employer_id FROM employers
+        """
+        self.cur.execute(request)
+        list_tuple = self.cur.fetchall()
+        self.db_disconnect()
+        for id_ in list_tuple:
+            out_lst.append(id_[0])
+        return out_lst
+
     @staticmethod
     def print_data_db(data_list: list[tuple]):
         for tpl in data_list:

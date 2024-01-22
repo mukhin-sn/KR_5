@@ -18,8 +18,7 @@ class MenuHandler:
         # Меню работы с запросами к сайту hh.ru
         self.menu_2 = {'1': 'Поиск работодателей по ключевым словам',
                        '2': 'Поиск работодателей по ID',
-                       '3': 'Сохранение результатов поиска',
-                       '4': 'Выход в главное меню',
+                       '3': 'Выход в главное меню',
                        }
 
         # Меню работы с базой данных
@@ -146,9 +145,10 @@ class MenuHandler:
         emp_list = []
         while True:
             self.answer = self.print_menu(self.menu_2)
-            if self.answer == '4':
+            if self.answer == '3':
                 break
 
+            # Поиск работодателей по ключевым словам
             elif self.answer == '1':
                 self.out_message(self.hi_message)
                 answer = self.input_answer()
@@ -172,7 +172,18 @@ class MenuHandler:
                 answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
                 if answer == '1':
                     self.db_obj.load_to_db('employers', emp_list)
-            elif self.answer == '2':
+
+                    # После сохранения данных по работодателям в базу данных
+                    # будет сформирована таблица вакансий для всех, сохранненых в базу, работодателей
+                    # Максимальное колличество вакансий ограничено 2000
+                    emp_id_list = self.db_obj.get_id_employers()
+                    for id_ in emp_id_list:
+                        self.vacancies_object.params['employer_id'] = id_
+                        out_list = self.vacancies_object.get_data()
+                        self.db_obj.load_to_db('vacancies', out_list)
+
+            # Поиск работодателей по ID
+            else:
                 emp_list.clear()
                 self.out_message('Введите ID - работодателя через запятую')
                 answer = self.input_answer()
@@ -182,12 +193,31 @@ class MenuHandler:
                     continue
                 for emp_id in emp_id_list:
                     self.employers_object.employer_id = emp_id
-                    emp_list.append(self.employers_object.get_data()[0])
+                    try:
+                        emp_list.append(self.employers_object.get_data()[0])
+                    except:
+                        self.out_message(f'Работодатель с ID {emp_id} не найден')
+                        continue
+                # Если не найден ни один работодатель
+                if not emp_list:
+                    print('Для введенных ID отсутствуют сведения о работодателях')
+                    continue
+                print(f'После сохранения работодателей в базу,\n'
+                                 f'будет формироваться таблица вакансий по всем,\n'
+                                 f'сохраненным в базе, работодателям.\n'
+                                 f'Это может занять длительное время')
                 answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
                 if answer == '1':
                     self.db_obj.load_to_db('employers', emp_list)
-            else:
-                pass
+
+                    # После сохранения данных по работодателям в базу данных
+                    # будет сформирована таблица вакансий для всех, сохранненых в базу, работодателей
+                    # Максимальное колличество вакансий ограничено 2000
+                    emp_id_list = self.db_obj.get_id_employers()
+                    for id_ in emp_id_list:
+                        self.vacancies_object.params['employer_id'] = id_
+                        out_list = self.vacancies_object.get_data()
+                        self.db_obj.load_to_db('vacancies', out_list)
 
     def menu_one_handler(self):
         """
