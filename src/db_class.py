@@ -117,6 +117,7 @@ class DBManager:
         for tpl in data_list:
             for dt in tpl:
                 print(dt, end=' | ')
+            print()
 
     def get_companies_and_vacancies_count(self) -> list:
         """
@@ -125,7 +126,7 @@ class DBManager:
         """
         self.db_connect(**self.params)
         request = """
-        SELECT
+        SELECT employer_name, open_vacancies FROM employers
         """
         self.cur.execute(request)
         out_lst = self.cur.fetchall()
@@ -140,7 +141,7 @@ class DBManager:
         """
         self.db_connect(**self.params)
         request = """
-        SELECT
+        SELECT 
         """
         self.cur.execute(request)
         out_lst = self.cur.fetchall()

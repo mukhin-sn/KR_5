@@ -116,6 +116,29 @@ class MenuHandler:
         answer = self.question_handler(menu)
         return answer
 
+    def save_vacancies_to_db(self, emp_list: list[tuple]):
+        """
+        Метод формирования таблицы vacancies в базе данных
+        :param emp_list: список для передачи в базу данных
+        :return:
+        """
+        print(f'После сохранения работодателей в базу,\n'
+              f'будет формироваться таблица вакансий по всем,\n'
+              f'сохраненным в базе, работодателям.\n'
+              f'Это может занять длительное время')
+        answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
+        if answer == '1':
+            self.db_obj.load_to_db('employers', emp_list)
+
+            # После сохранения данных по работодателям в базу данных
+            # будет сформирована таблица вакансий для всех, сохраненных в базу, работодателей
+            # Максимальное количество вакансий ограничено 2000
+            emp_id_list = self.db_obj.get_id_employers()
+            for id_ in emp_id_list:
+                self.vacancies_object.params['employer_id'] = id_
+                out_list = self.vacancies_object.get_data()
+                self.db_obj.load_to_db('vacancies', out_list)
+
     def menu_three_handler(self):
         """
         Метод обработки меню работы с базой данных
@@ -169,18 +192,9 @@ class MenuHandler:
                     self.employers_object.employer_id = emp_id
                     emp_list.append(self.employers_object.get_data()[0])
                     # HhClass.employers_with_vacancies(emp_id)
-                answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
-                if answer == '1':
-                    self.db_obj.load_to_db('employers', emp_list)
 
-                    # После сохранения данных по работодателям в базу данных
-                    # будет сформирована таблица вакансий для всех, сохранненых в базу, работодателей
-                    # Максимальное колличество вакансий ограничено 2000
-                    emp_id_list = self.db_obj.get_id_employers()
-                    for id_ in emp_id_list:
-                        self.vacancies_object.params['employer_id'] = id_
-                        out_list = self.vacancies_object.get_data()
-                        self.db_obj.load_to_db('vacancies', out_list)
+                # Формируем таблицу Vacancies
+                self.save_vacancies_to_db(emp_list)
 
             # Поиск работодателей по ID
             else:
@@ -202,22 +216,8 @@ class MenuHandler:
                 if not emp_list:
                     print('Для введенных ID отсутствуют сведения о работодателях')
                     continue
-                print(f'После сохранения работодателей в базу,\n'
-                                 f'будет формироваться таблица вакансий по всем,\n'
-                                 f'сохраненным в базе, работодателям.\n'
-                                 f'Это может занять длительное время')
-                answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
-                if answer == '1':
-                    self.db_obj.load_to_db('employers', emp_list)
-
-                    # После сохранения данных по работодателям в базу данных
-                    # будет сформирована таблица вакансий для всех, сохранненых в базу, работодателей
-                    # Максимальное колличество вакансий ограничено 2000
-                    emp_id_list = self.db_obj.get_id_employers()
-                    for id_ in emp_id_list:
-                        self.vacancies_object.params['employer_id'] = id_
-                        out_list = self.vacancies_object.get_data()
-                        self.db_obj.load_to_db('vacancies', out_list)
+                # Формируем таблицу Vacancies
+                self.save_vacancies_to_db(emp_list)
 
     def menu_one_handler(self):
         """
