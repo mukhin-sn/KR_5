@@ -147,7 +147,7 @@ class DBManager:
         salary_currency,
         vacancies_url
         FROM vacancies
-        INNER JOIN EMPLOYERS USING(employer_id)
+        INNER JOIN employers USING(employer_id)
         WHERE salary_currency = 'RUR'
         """
         self.cur.execute(request)
@@ -160,14 +160,17 @@ class DBManager:
         Получает среднюю зарплату по вакансиям
         :return:
         """
-        self.db_connect(**self.params)
-        request = """
-        SELECT AVG(GREATEST(salary_from, salary_to)) FROM vacancies
-        """
-        self.cur.execute(request)
-        out_lst = self.cur.fetchall()
-        self.db_disconnect()
-        average_salary = float(out_lst[0][0])
+        try:
+            self.db_connect(**self.params)
+            request = """
+            SELECT AVG(GREATEST(salary_from, salary_to)) FROM vacancies
+            """
+            self.cur.execute(request)
+            out_lst = self.cur.fetchall()
+            self.db_disconnect()
+            average_salary = float(out_lst[0][0])
+        except TypeError:
+            return None
         return average_salary
 
     def get_vacancies_with_higher_salary(self) -> list:
