@@ -196,7 +196,6 @@ class MenuHandler:
                 for emp_id in emp_id_list:
                     self.employers_object.employer_id = emp_id
                     emp_list.append(self.employers_object.get_data()[0])
-                    # HhClass.employers_with_vacancies(emp_id)
 
                 # Формируем таблицу Vacancies
                 self.save_vacancies_to_db(emp_list)

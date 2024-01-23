@@ -53,7 +53,6 @@ class DBManager:
         try:
             self.cur.execute(f'CREATE DATABASE {db_name}')
         except psycopg2.errors.DuplicateDatabase:
-            # print('База данных существует')
             pass
         finally:
             params['database'] = db_name
@@ -86,6 +85,7 @@ class DBManager:
             # self.cur.execute(self.sql_request)
             out_str = f'INSERT INTO {tab_name} VALUES ({"%s, " * (len(data_list[0]) - 1)}%s)'
             self.cur.executemany(out_str, data_list)
+
         # Запись данных в базу
         # Проверка на повторение записи
         except psycopg2.errors.InFailedSqlTransaction:
