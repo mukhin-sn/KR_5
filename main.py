@@ -41,6 +41,10 @@ def main():
     menu_handler.menu_one_handler()
 
     # print(db_object.get_id_employers())
+    # text = 'python, django'
+    # temp_data = db_object.get_vacancies_with_higher_salary()
+    #
+    # db_object.print_data_db(temp_data)
 
     # Тестирование функции get_employers()
     # ===============================================

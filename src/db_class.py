@@ -133,7 +133,7 @@ class DBManager:
         self.db_disconnect()
         return out_lst
 
-    def get_all_vacancies(self) -> list[dict]:
+    def get_all_vacancies(self) -> list[tuple]:
         """
         Получает список всех вакансий с указанием названия компании,
         названия вакансии и зарплаты и ссылки на вакансию
@@ -141,7 +141,14 @@ class DBManager:
         """
         self.db_connect(**self.params)
         request = """
-        SELECT 
+        SELECT employers.employer_name,
+        vacancies_name,
+        GREATEST(salary_from, salary_to),
+        salary_currency,
+        vacancies_url
+        FROM vacancies
+        INNER JOIN EMPLOYERS USING(employer_id)
+        WHERE salary_currency = 'RUR'
         """
         self.cur.execute(request)
         out_lst = self.cur.fetchall()
@@ -153,14 +160,14 @@ class DBManager:
         Получает среднюю зарплату по вакансиям
         :return:
         """
-        average_salary = None
         self.db_connect(**self.params)
         request = """
-        SELECT
+        SELECT AVG(GREATEST(salary_from, salary_to)) FROM vacancies
         """
         self.cur.execute(request)
         out_lst = self.cur.fetchall()
         self.db_disconnect()
+        average_salary = float(out_lst[0][0])
         return average_salary
 
     def get_vacancies_with_higher_salary(self) -> list:
@@ -171,7 +178,9 @@ class DBManager:
         """
         self.db_connect(**self.params)
         request = """
-        SELECT
+        SELECT * FROM vacancies
+        WHERE GREATEST(salary_from, salary_to) > (SELECT AVG(GREATEST(salary_from, salary_to))
+        FROM vacancies)
         """
         self.cur.execute(request)
         out_lst = self.cur.fetchall()
@@ -186,13 +195,17 @@ class DBManager:
         :return:
         """
 
-        # Формируем список из строки :param text:
+        # Формируем текст запроса из строки :param text:
+        temp_list = []
         word_list = [word.strip().lower() for word in text.split(',')]
+        temp_list.extend(word_list)
+        word_list = [word.strip().capitalize() for word in text.split(',')]
+        temp_list.extend(word_list)
+        out_str = "vacancies_name LIKE '%" + "%' OR vacancies_name LIKE '%".join(temp_list) + "%'"
 
         self.db_connect(**self.params)
-        request = """
-        SELECT
-        """
+        request = (f"SELECT * FROM vacancies "
+                   f"WHERE {out_str}")
         self.cur.execute(request)
         out_lst = self.cur.fetchall()
         self.db_disconnect()

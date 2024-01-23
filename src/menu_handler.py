@@ -148,17 +148,22 @@ class MenuHandler:
             if self.answer == '6':
                 break
             elif self.answer == '1':
-                self.db_obj.get_companies_and_vacancies_count()
+                out_data = self.db_obj.get_companies_and_vacancies_count()
+                self.db_obj.print_data_db(out_data)
             elif self.answer == '2':
-                self.db_obj.get_all_vacancies()
+                out_data = self.db_obj.get_all_vacancies()
+                self.db_obj.print_data_db(out_data)
             elif self.answer == '3':
-                self.db_obj.get_avg_salary()
+                out_data = self.db_obj.get_avg_salary()
+                self.out_message(f'Средняя зарплата по вакансиям составляет:\n{out_data}')
             elif self.answer == '4':
-                self.db_obj.get_vacancies_with_higher_salary()
+                out_data = self.db_obj.get_vacancies_with_higher_salary()
+                self.db_obj.print_data_db(out_data)
             else:
                 self.out_message(self.hi_message)
                 answer = self.input_answer()
-                self.db_obj.get_vacancies_with_keyword(answer)
+                out_data = self.db_obj.get_vacancies_with_keyword(answer)
+                self.db_obj.print_data_db(out_data)
 
     def menu_two_handler(self):
         """
