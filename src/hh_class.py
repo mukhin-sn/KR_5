@@ -13,11 +13,17 @@ class HhClass:
         self.params = params  # Параметры GET-запроса
         self.data_list = []  # Список найденных записей
 
-        # количество найденных записей
-        if self.params == {}:
-            self.count_of_data_list = 0
+    def count_of_data_list(self, **params):
+        """
+        Метод возвращает количество найденных записей
+        :param params: параметры запроса
+        :return:
+        """
+        if params == {}:
+            count_of_data_list = 0
         else:
-            self.count_of_data_list = (requests.get(self.url, params=self.params).json())["found"]
+            count_of_data_list = (requests.get(self.url, params=params).json())["found"]
+        return count_of_data_list
 
     def __str__(self):
         return f"{self.__class__.__name__}"
@@ -25,33 +31,37 @@ class HhClass:
     def __repr__(self):
         return (f'host-url = {self.url}\n'
                 f'PARAMS -> {[key_val for key_val in self.params.items()]}\n'
-                f'Number of records found = {self.count_of_data_list}\n'
+                f'Number of records found = {self.count_of_data_list(**self.params)}\n'
                 f'стр. {self.page_count()}')
 
-    def page_count(self) -> int:
+    def page_count(self, **params) -> int:
         """
         Метод вычисляет количество страниц для отображения записей
         :return: число страниц
         """
 
-        page_count = self.count_of_data_list // 100
+        page_count = self.count_of_data_list(**params) // 100
         if page_count >= 20:
             page_count = 20
-        elif (self.count_of_data_list % 100) > 0:
+        elif (self.count_of_data_list(**params) % 100) > 0:
             page_count += 1
         return page_count
 
-    def get_data(self, param=None) -> list[tuple]:
+    def get_data(self, **param) -> list[tuple]:
         """
         Метод получения данных с сайта hh.ru
         :return: Список полученных, в результате GET-запроса, данных,
         готовых для передачи в базу данных
         """
 
+        param['per_page'] = 100
+        param['area'] = 113
+        param['only_with_salary'] = True
+
         data_list = []
         if param is None:
             param = self.params
-        for page in range(self.page_count()):
+        for page in range(self.page_count(**param)):
             param['page'] = page
             temp_data_list = requests.get(self.url, params=param).json()["items"]
             for tmp_lst in temp_data_list:
@@ -108,20 +118,6 @@ class HhClass:
             out_list = json.load(file)
             return out_list
 
-    def id_employers_filter(self) -> list:
-        """
-        Метод убирает повторяющиеся ID-работодателей
-        :return:
-        """
-        if not self.data_list:
-            self.get_data()
-        out_list = []
-        for val_dic in self.data_list:
-            out_list.append(val_dic[1])
-        out_list = set(out_list)
-        print(f'Всего уникальных записей: {len(out_list)}')
-        return list(out_list)
-
     @staticmethod
     def print_data(data_list: list[tuple]) -> None:
         """
@@ -145,7 +141,7 @@ class HhClass:
         word_list = [word.strip().lower() for word in txt.split(',')]
 
         # Формируем выходную строку
-        return 'AND'.join(word_list)
+        return ' AND '.join(word_list)
 
     @staticmethod
     def get_list_id(request: str) -> list:
@@ -170,13 +166,17 @@ class EmployersHhClass(HhClass):
         self.employer_id = employer_id
         self.url = url
 
-        # количество открытых вакансий
-        if self.employer_id == '':
-            self.count_of_data_list = 0
+    def count_of_data_list(self, **params):
+        """
+        Метод возвращает количество найденных записей
+        :param params: параметры запроса
+        :return:
+        """
+        if params == {}:
+            count_of_data_list = 0
         else:
-            self.count_of_data_list = (requests.get(f'{self.url}/{self.employer_id}').json())["open_vacancies"]
-
-        # self.count_of_data_list = (requests.get(self.url).json())["open_vacancies"]
+            count_of_data_list = (requests.get(self.url, params=params).json())["open_vacancies"]
+        return count_of_data_list
 
     def get_data(self, **kwargs) -> list[tuple]:
         """
@@ -210,3 +210,18 @@ class EmployersHhClass(HhClass):
             for tpl in dl:
                 print(tpl, end=' | ')
             print()
+
+    @staticmethod
+    def id_employers_filter(vac_list: list[tuple]) -> list:
+        """
+        Метод убирает повторяющиеся ID-работодателей
+        :return:
+        """
+        if not vac_list:
+            return []
+        out_list = []
+        for vac in vac_list:
+            out_list.append(vac[1])
+        out_list = set(out_list)
+        print(f'Всего уникальных записей: {len(out_list)}')
+        return list(out_list)
