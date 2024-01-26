@@ -24,9 +24,10 @@ class DBManager:
         """
         while True:  # цикл повторяется, пока не введен верный пароль
             try:
-                self.conn = psycopg2.connect(**params)
-            except: #psycopg2.OperationalError: # UnicodeDecodeError:
+                self.conn = psycopg2.connect(**self.params)
+            except:  # psycopg2.OperationalError: # UnicodeDecodeError:
                 print('PASSWORD - ERROR\nПопробуйте ещё раз')
+                print(self.params)
             else:
                 break
             params['password'] = input('-> ')
@@ -80,20 +81,21 @@ class DBManager:
         :return:
         """
         self.db_connect(**self.params)
+        out_str = f'INSERT INTO {tab_name} VALUES ({"%s, " * (len(data_list[0]) - 1)}%s)'
 
-        try:
-            # self.cur.execute(self.sql_request)
-            out_str = f'INSERT INTO {tab_name} VALUES ({"%s, " * (len(data_list[0]) - 1)}%s)'
-            self.cur.executemany(out_str, data_list)
+        for data_i in data_list:
+            try:
+                # self.cur.execute(self.sql_request)
+                # Запись данных в базу
 
-        # Запись данных в базу
-        # Проверка на повторение записи
-        except psycopg2.errors.InFailedSqlTransaction:
-            pass
-        except psycopg2.errors.UniqueViolation:
-            pass
-        finally:
-            self.db_disconnect()
+                self.cur.execute(out_str, data_i)
+                print(f'Load data: {data_i}')
+            # Проверка на повторение записи
+            except psycopg2.errors.InFailedSqlTransaction:
+                continue
+            except psycopg2.errors.UniqueViolation:
+                continue
+        self.db_disconnect()
 
     def get_id_employers(self) -> list:
         """
@@ -111,6 +113,18 @@ class DBManager:
         for id_ in list_tuple:
             out_lst.append(id_[0])
         return out_lst
+
+    def check_id_employers(self, data_list: list) -> list:
+        """
+        Метод выдает список ID работодателей из списка :param data_list:,
+        которые отсутствуют в базе данных
+        :param data_list: список ID работодателей, который нужно сравнить с базой данных
+        :return: список ID работодателей из списка :param data_list:,
+        которых нет в базе данных
+        """
+        db_set = set(self.get_id_employers())
+        out_list = list(set(data_list).difference(db_set))
+        return out_list
 
     @staticmethod
     def print_data_db(data_list: list[tuple]):
