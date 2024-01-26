@@ -27,11 +27,11 @@ class DBManager:
                 self.conn = psycopg2.connect(**self.params)
             except:  # psycopg2.OperationalError: # UnicodeDecodeError:
                 print('PASSWORD - ERROR\nПопробуйте ещё раз')
-                print(self.params)
+                params['password'] = input('-> ')
+                self.params['password'] = params['password']
             else:
                 break
-            params['password'] = input('-> ')
-        self.params['password'] = params['password']
+
         self.conn.autocommit = auto_comm
         self.cur = self.conn.cursor()
 

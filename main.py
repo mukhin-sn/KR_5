@@ -4,34 +4,13 @@ from src.config import config
 
 
 def main():
-    # db_name = "hh_ru"
-    # db_params = {
-    #     "host": "localhost",
-    #     "database": db_name,
-    #     "user": "postgres",
-    #     }
+
     db_params = config(filename='src/database.ini')
+    params_employers = config(filename='src/database.ini', section='employers')
+    params_vacancies = config(filename='src/database.ini', section='vacancies')
 
     url_employers = 'https://api.hh.ru/employers'
     url_vacancies = 'https://api.hh.ru/vacancies'
-
-    # params_employers = {
-    #     'per_page': 100,
-    #     'area': 113,  # Регион работодателя
-    #     # 'text': f'NAME:{data}',           # Текст, встречающийся в имени работодателя
-    #     'only_with_vacancies': True,  # Только открытые вакансии
-    #     'sort_by': 'by_vacancies_open',  # Сортировка по количеству открытых вакансий (по убыванию)
-    # }
-    params_employers = config(filename='src/database.ini', section='employers')
-
-    # params_vacancies = {
-    #     'per_page': 100,
-    #     'area': 113,
-    #     # 'text': f'NAME:{text}',
-    #     # "employer_id": emp_id,
-    #     'only_with_salary': True,
-    # }
-    params_vacancies = config(filename='src/database.ini', section='vacancies')
 
     db_object = DBManager(**db_params)
     db_object.create_table(sql_for_employers_create)

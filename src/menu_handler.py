@@ -197,13 +197,12 @@ class MenuHandler:
                 self.out_message('Ожидайте, формирование списка работодателей займёт некоторое время')
 
                 # выделяем отсутствующих в базе данных работодателей из полученного списка ID работодателей
-                emp_id_list = self.db_obj.db_connect(emp_id_list)
+                emp_id_list = self.db_obj.check_id_employers(emp_id_list)
                 for emp_id in emp_id_list:
                     self.employers_object.employer_id = emp_id
                     dt = self.employers_object.get_data()[0]
                     print(dt)
                     emp_list.append(dt)
-                print(len(emp_list))
 
                 # Формируем таблицу Vacancies
                 self.save_vacancies_to_db(emp_list)
