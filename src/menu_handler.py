@@ -123,20 +123,22 @@ class MenuHandler:
         :return:
         """
         print(f'После сохранения работодателей в базу,\n'
-              f'будет формироваться таблица вакансий по всем,\n'
-              f'сохраненным в базе, работодателям.\n'
+              f'будет формироваться таблица вакансий по этим работодателям,\n'
               f'Это может занять длительное время')
         answer = self.second_menu('Сохранить найденных работодателей в базу данных?')
         if answer == '1':
             self.db_obj.load_to_db('employers', emp_list)
 
             # После сохранения данных по работодателям в базу данных
-            # будет сформирована таблица вакансий для всех, сохраненных в базу, работодателей
+            # будет сформирована таблица вакансий для этих работодателей
             # Максимальное количество вакансий ограничено 2000
-            emp_id_list = self.db_obj.get_id_employers()
+
+            # Получим список ID работодателей из списка работодателей
+            emp_id_list = []
+            for emp_id in emp_list:
+                emp_id_list.append(emp_id[0])
             for id_ in emp_id_list:
-                self.vacancies_object.params['employer_id'] = id_
-                out_list = self.vacancies_object.get_data()
+                out_list = self.vacancies_object.get_data(employer_id=id_)
                 self.db_obj.load_to_db('vacancies', out_list)
 
     def menu_three_handler(self):
@@ -178,24 +180,29 @@ class MenuHandler:
 
             # Поиск работодателей по ключевым словам
             elif self.answer == '1':
+                emp_list.clear()
                 self.out_message(self.hi_message)
                 answer = self.input_answer()
                 self.out_message('Ожидайте, обработка запроса займёт некоторое время')
                 answer = HhClass.get_text(answer)
                 self.vacancies_object.params['text'] = f'NAME:{answer}'
-                self.vacancies_object.get_data()
+                vac_list = self.vacancies_object.get_data(**self.vacancies_object.params)
                 self.vacancies_object.print_data_list()
                 self.any_key = input('Для продолжения нажмите "Enter"')
                 self.out_message(f'Список ID - компаний, содержащих '
                                  f'ключевые слова,\nбудет сохранен в файл '
                                  f'{self.file_employers_id}')
-                emp_id_list = self.vacancies_object.id_employers_filter()
-                # print(emp_id_list)
+                emp_id_list = self.employers_object.id_employers_filter(vac_list)
                 HhClass.save_to_file(self.file_employers_id, emp_id_list)
                 self.out_message('Ожидайте, формирование списка работодателей займёт некоторое время')
+
+                # выделяем отсутствующих в базе данных работодателей из полученного списка ID работодателей
+                emp_id_list = self.db_obj.check_id_employers(emp_id_list)
                 for emp_id in emp_id_list:
                     self.employers_object.employer_id = emp_id
-                    emp_list.append(self.employers_object.get_data()[0])
+                    dt = self.employers_object.get_data()[0]
+                    print(dt)
+                    emp_list.append(dt)
 
                 # Формируем таблицу Vacancies
                 self.save_vacancies_to_db(emp_list)
@@ -203,7 +210,7 @@ class MenuHandler:
             # Поиск работодателей по ID
             else:
                 emp_list.clear()
-                self.out_message('Введите ID - работодателя через запятую')
+                self.out_message('Введите ID - работодателей через запятую')
                 answer = self.input_answer()
                 emp_id_list = HhClass.get_list_id(answer)
                 if not emp_id_list:
